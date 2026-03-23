@@ -1,0 +1,130 @@
+# FinTech-540: Ethereum Token Spam Detection
+
+Spam detection classifier for ERC-20/ERC-721 tokens using behavioral features engineered from 1,000 blocks (~20M transfers) of Ethereum token transfer data.
+
+## Project Overview
+
+Spam tokens on Ethereum often impersonate legitimate tokens by reusing the same symbol (e.g., a fake "USDT" with a different contract address). This project builds a supervised binary classifier to distinguish spam tokens (0) from legitimate tokens (1) using on-chain behavioral signals.
+
+**Label definition:**
+- **Legit (1):** Contract address verified in `token_labels.csv`
+- **Spam (0):** Same symbol as a verified token but different contract address (symbol collision)
+- **Unlabeled:** Unverified tokens without a known collision — excluded from supervised training
+
+## Repository Structure
+
+```
+.
+├── EDA.ipynb                        # Exploratory data analysis (completed)
+├── PROJECT_PIPELINE.md              # Full project pipeline & next steps
+├── blockchain_data_description.pdf  # Data schema documentation
+├── data/
+│   ├── token_labels.csv             # Verified token metadata (~2,700 tokens)
+│   └── account_labels.csv           # Known Ethereum entity labels (~370k accounts)
+│   # Large files below are git-ignored — see "Getting the Data" section
+│   # transfers_20000000.parquet     (~409 MB)
+│   # txs_20000000.parquet           (~239 MB)
+│   # zeromev_20000000.parquet       (~170 MB)
+└── README.md
+```
+
+## Getting the Data
+
+The large parquet files are not tracked in git. Contact a team member or the course instructor to obtain:
+
+| File | Size | Description |
+|------|------|-------------|
+| `data/transfers_20000000.parquet` | ~409 MB | Token transfer events (main dataset) |
+| `data/txs_20000000.parquet` | ~239 MB | MEV transaction data |
+| `data/zeromev_20000000.parquet` | ~170 MB | MEV extraction data |
+
+Place them in the `data/` directory before running any notebooks.
+
+## Environment Setup
+
+### Prerequisites
+- Python 3.9+
+- Jupyter Lab or Jupyter Notebook
+
+### Install Dependencies
+
+```bash
+pip install pandas numpy matplotlib seaborn scikit-learn xgboost lightgbm shap pyarrow fastparquet jupyter
+```
+
+Or with conda:
+
+```bash
+conda create -n fintech540 python=3.10
+conda activate fintech540
+conda install pandas numpy matplotlib seaborn scikit-learn jupyter pyarrow
+pip install xgboost lightgbm shap
+```
+
+## Running the Project
+
+Follow the notebooks in this order:
+
+| Step | Notebook | Status |
+|------|----------|--------|
+| 1 | `EDA.ipynb` | Done |
+| 2 | `preprocessing.ipynb` | To do |
+| 3 | `modeling.ipynb` | To do |
+| 4 | `evaluation.ipynb` | To do |
+
+See [`PROJECT_PIPELINE.md`](PROJECT_PIPELINE.md) for detailed instructions on each stage.
+
+## Key Features
+
+Features are aggregated at the **token (contract address) level**:
+
+| Feature | Spam Signal |
+|---------|------------|
+| `n_unique_senders` | Spam has very few senders |
+| `sender_receiver_ratio` | Spam: few senders → many receivers (airdrop) |
+| `n_distinct_blocks` | Spam burst-deploys in 1–2 blocks |
+| `transfers_per_block` | Spam has dense burst activity |
+| `value_std` | Spam uses uniform airdrop amounts |
+| `value_null_ratio` | Spam often has missing decimals |
+| `sender_is_labeled` | Legit tokens sent by known protocols/DEXs |
+
+## Contributing
+
+### Branching Convention
+
+```
+main          → stable, reviewed code only
+dev           → integration branch
+feature/<name> → your working branch (e.g., feature/xgboost-model)
+```
+
+### Workflow
+
+1. Branch off `dev`: `git checkout -b feature/your-feature dev`
+2. Make your changes and commit with clear messages
+3. Open a Pull Request into `dev`
+4. At least one team member reviews before merging
+5. `dev` → `main` merges happen at milestone checkpoints
+
+### Commit Message Style
+
+```
+<type>: <short description>
+
+Types: feat | fix | data | model | eval | docs | refactor
+Examples:
+  feat: add SHAP feature importance to evaluation notebook
+  model: tune XGBoost hyperparameters with Optuna
+  data: add Gini coefficient feature for receiver concentration
+```
+
+## Team
+
+| Name | GitHub | Role |
+|------|--------|------|
+| Yuchen Zhou | — | Lead |
+| *(add teammates)* | — | — |
+
+## License
+
+For academic use only (FinTech-540 course project).
