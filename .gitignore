@@ -36,3 +36,6 @@ desktop.ini
 models/*.pkl
 models/*.joblib
 outputs/
+
+# Val results CSV is tracked (small, useful for teammates)
+!models/val_results.csv
