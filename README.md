@@ -73,10 +73,10 @@ Follow the notebooks in this order:
 
 | Step | Notebook | Status |
 |------|----------|--------|
-| 1 | `EDA.ipynb` | Done |
-| 2 | `preprocessing.ipynb` | Done |
-| 3 | `modeling.ipynb` | To do |
-| 4 | `evaluation.ipynb` | To do |
+| 1 — EDA | `EDA.ipynb` | Done |
+| 2 — Feature engineering, split & scaling | `preprocessing.ipynb` | Done |
+| 3 — Baseline & advanced models | `modeling.ipynb` | To do |
+| 4 — Evaluation & interpretation | `evaluation.ipynb` | To do |
 
 See [`PROJECT_PIPELINE.md`](PROJECT_PIPELINE.md) for detailed instructions on each stage.
 

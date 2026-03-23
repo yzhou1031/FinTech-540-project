@@ -95,34 +95,16 @@ Start from `token_features` DataFrame built in EDA. Confirmed features:
 
 ---
 
-## Stage 2 — Train/Test Split & Class Imbalance
+## Stage 2 — Train/Test Split & Class Imbalance ✅ Complete
 
-**Label distribution (approximate):**
-- Legit (1): 1,599 (~44%)
-- Spam (0): 2,007 (~56%)
+**Folded into `preprocessing.ipynb` (Stage 1).**
 
-Mild imbalance — manageable but worth addressing.
-
-### 2.1 Split Strategy
-
-```python
-from sklearn.model_selection import StratifiedShuffleSplit
-
-# 70/15/15 stratified split
-train (70%) | val (15%) | test (15%)
-```
-
-Use `StratifiedShuffleSplit` to preserve class ratios across splits. Hold out the test set and do not touch it until final evaluation.
-
-### 2.2 Imbalance Handling Options
-
-| Method | When to Use |
-|---|---|
-| `class_weight='balanced'` | Simple, built into most sklearn estimators |
-| SMOTE (oversampling) | If imbalance worsens after additional feature engineering |
-| Threshold tuning | Post-hoc, adjust decision threshold for recall/precision tradeoff |
-
-Start with `class_weight='balanced'` — add SMOTE only if needed.
+**Actual results:**
+- Legit (1): 1,599 (44.3%) | Spam (0): 2,007 (55.7%) — mild imbalance
+- Stratified 70/15/15 split via `train_test_split(stratify=y)`
+  - Train: 2,524 | Val: 541 | Test: 541 — class ratios preserved in all splits
+- Test set is held out and untouched until final evaluation (Stage 5)
+- Imbalance strategy: use `class_weight='balanced'` in all estimators; revisit SMOTE only if F1 on val set is poor
 
 ---
 
