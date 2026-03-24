@@ -39,3 +39,9 @@ outputs/
 
 # Val results CSV is tracked (small, useful for teammates)
 !models/val_results.csv
+
+# LaTeX auxiliary files
+*.aux
+*.log
+*.out
+*.synctex.gz
