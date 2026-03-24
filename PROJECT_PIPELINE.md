@@ -28,7 +28,7 @@ Stage 4: Advanced Model Training & Hyperparameter Tuning   ✅ Done  →  modeli
    ↓
 Stage 5: Model Evaluation & Interpretation     ⬜ Next  →  evaluation.ipynb
    ↓
-Stage 6: (Optional) Semi-Supervised Extension  ⬜ To do
+Stage 6: Semi-Supervised Extension             ⬜ To do  →  semi_supervised.ipynb
    ↓
 Stage 7: Final Report & Deliverables           ⬜ To do
 ```
