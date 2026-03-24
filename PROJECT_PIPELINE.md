@@ -22,11 +22,11 @@ Stage 1: Feature Engineering & Preprocessing   ✅ Done  →  preprocessing.ipyn
    ↓
 Stage 2: Train/Test Split & Class Imbalance Handling   (folded into Stage 1 ✅)
    ↓
-Stage 3: Baseline Model Training               ⬜ Next  →  modeling.ipynb
+Stage 3: Baseline Model Training               ✅ Done  →  modeling.ipynb
    ↓
-Stage 4: Advanced Model Training & Hyperparameter Tuning   ⬜ To do
+Stage 4: Advanced Model Training & Hyperparameter Tuning   ✅ Done  →  modeling.ipynb
    ↓
-Stage 5: Model Evaluation & Interpretation     ⬜ To do  →  evaluation.ipynb
+Stage 5: Model Evaluation & Interpretation     ⬜ Next  →  evaluation.ipynb
    ↓
 Stage 6: (Optional) Semi-Supervised Extension  ⬜ To do
    ↓
