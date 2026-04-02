@@ -1,6 +1,6 @@
 # Spam Detection Pipeline — Ethereum Token Transfer Data
 
-**Project:** FinTech-540 | **Data:** 1,000-block window (~20M transfers) | **Status:** Stage 6 Complete — Final Report Remaining
+**Project:** FinTech-540 | **Data:** 1,000-block window (~20M transfers) | **Status:** Stages 6–8 Complete — Final Report Remaining
 
 ---
 
@@ -18,19 +18,23 @@ Classify Ethereum tokens as **spam (0)** or **legitimate (1)** using token-level
 ```
 EDA                              ✅ Done  →  EDA.ipynb
    ↓
-Stage 1: Feature Engineering & Preprocessing   ✅ Done  →  preprocessing.ipynb
+Stage 1: Feature Engineering & Preprocessing      ✅ Done  →  preprocessing.ipynb
    ↓
-Stage 2: Train/Test Split & Class Imbalance    ✅ Done  (folded into Stage 1)
+Stage 2: Train/Test Split & Class Imbalance       ✅ Done  (folded into Stage 1)
    ↓
-Stage 3: Baseline Model Training               ✅ Done  →  modeling.ipynb
+Stage 3: Baseline Model Training                  ✅ Done  →  modeling.ipynb
    ↓
 Stage 4: Advanced Models & Hyperparameter Tuning  ✅ Done  →  modeling.ipynb
    ↓
-Stage 5: Model Evaluation & Interpretation     ✅ Done  →  evaluation.ipynb
+Stage 5: Model Evaluation & Interpretation        ✅ Done  →  evaluation.ipynb
    ↓
-Stage 6: Semi-Supervised Extension             ✅ Done  →  semi_supervised.ipynb
+Stage 6: Semi-Supervised Extension                ✅ Done  →  semi_supervised.ipynb
    ↓
-Stage 7: Final Report & Deliverables           ⬜ Next
+Stage 7: Label Expansion via Account Labels       ✅ Done  →  label_expansion.ipynb
+   ↓
+Stage 8: Improved Semi-Supervised Learning        ✅ Done  →  improved_semi_supervised.ipynb
+   ↓
+Stage 9: Final Report & Deliverables              ⬜ Next
 ```
 
 ---
@@ -161,7 +165,62 @@ Logistic Regression established a strong linear baseline (0.819), showing that e
 
 ---
 
-## Stage 7 — Final Report & Deliverables ⬜ Next
+## Stage 7 — Label Expansion via Account Labels ✅ Complete
+
+**Notebook:** `label_expansion.ipynb` | **Issue:** #3 | **Unlabeled pool:** 8,750 tokens
+
+Used `account_labels.csv` (~370k known Ethereum entities) to flag tokens whose top sender or deployer matches a known bot, mixer, or phishing actor, then cross-referenced with the DeFi allow-list in `token_labels.csv`.
+
+**Two iterations run:**
+
+**v1:** Keyword search across all label columns → 57,585 flagged entities → 2,298 pseudo-spam tokens. Degraded F1 by −0.018 to −0.026. Post-audit: 84.6% of pseudo-labels came from the null address `0x000...000` (EVM minting convention, not a malicious actor).
+
+**v2 — Three fixes applied:**
+- Fix 1: Excluded null address from flagged entity set
+- Fix 2: Replaced keyword search with exact group-name matching (`MEV Bot`, `Multichain Hack Alert`) and Etherscan name prefixes (`Fake_Phishing*`, `Scam_*`) — eliminated infrastructure false positives (Uniswap V2, 1inch)
+- Fix 3: Used typed entity flags (`phishing_flag`, `mev_bot_flag`, `hack_flag`) as supervised features instead of pseudo-labels
+
+**Results (v2):**
+
+| Approach | F1-macro | Δ vs baseline |
+|---|---|---|
+| Supervised baseline | **0.8838** | — |
+| Entity pseudo-spam only | 0.8801 | −0.004 |
+| Entity spam + confidence legit | 0.8817 | −0.002 |
+| Entity flags as features (Fix 3) | 0.8802 | −0.004 |
+
+`phishing_flag` and `hack_flag` scored **zero feature importance** — behavioral features already encode the signal from entity identity. **Model unchanged.**
+
+---
+
+## Stage 8 — Improved Semi-Supervised Learning ✅ Complete
+
+**Notebook:** `improved_semi_supervised.ipynb` | **Issue:** #4 | **Unlabeled pool:** 8,750 tokens
+
+Addressed the 14:1 class-skew problem from Stage 6 with three alternative approaches.
+
+| Approach | Train size | F1-macro | Δ vs baseline |
+|---|---|---|---|
+| Supervised baseline | 2,524 | **0.8838** | — |
+| IF-A1 spam manifold (score > 0.00) | 4,166 | 0.8769 | −0.007 |
+| IF-A1 spam manifold (score > 0.05) | 2,529 | 0.8838 | 0.000 |
+| IF-A1 spam manifold (score > 0.10) | 2,524 | 0.8838 | 0.000 |
+| IF-A2 global anomaly (auto) | — | 0.4314 | −0.452 |
+| Label Spreading k=10 α=0.2 | 2,524 | 0.8563 | −0.028 |
+| Sender-network propagation (share > 0.3) | 6,697 | 0.8696 | −0.014 |
+| Sender-network propagation (share > 0.5) | 4,760 | 0.8569 | −0.027 |
+| Sender-network propagation (share > 0.7) | 4,318 | 0.8609 | −0.023 |
+
+**Key findings:**
+- IF-A2 (global anomaly) failed catastrophically (F1=0.43): anomaly detection flags the minority class — legit tokens — since spam is the majority at 55.7%
+- Label Spreading (−0.028): spam and legit overlap in feature space, labels blur at boundaries
+- **Sender-network propagation (−0.014):** best-performing alternative across all semi-supervised stages (6, 7, 8); uses transfer topology rather than feature similarity; diluted by 6,578 mixed-use wallets active on both spam and legit tokens
+
+**Decision:** Model unchanged. See `model_status.md` for full cross-issue summary.
+
+---
+
+## Stage 9 — Final Report & Deliverables ⬜ Next
 
 ### Report Checklist
 
@@ -172,13 +231,14 @@ Logistic Regression established a strong linear baseline (0.819), showing that e
 - [ ] Best model test set performance with confusion matrix
 - [ ] SHAP feature importance plot
 - [ ] Error analysis: what types of tokens are hardest to classify?
-- [ ] Semi-supervised extension results and conclusion
+- [ ] Semi-supervised extension results and conclusion (Stages 6, 7, 8)
 - [ ] Discussion: limitations, potential improvements, deployment considerations
 
 ### Supporting Documents Already Available
 
 - [x] `feature_description.pdf` — full feature reference for all 16 features
 - [x] `models/val_results.csv` — complete model comparison table
+- [x] `model_status.md` — cross-issue model stability summary (Issues #3 & #4)
 - [x] All notebooks with inline results and summary cells
 
 ---
@@ -199,15 +259,18 @@ All confirmed excluded from feature matrix `X`:
 ```
 Open report / presentation and write up findings.
 All data, figures, and model outputs are available across:
-  - EDA.ipynb              → data insights, feature correlations
-  - preprocessing.ipynb    → feature engineering methodology
-  - modeling.ipynb         → model comparison, best model summary
-  - evaluation.ipynb       → final metrics, SHAP plots, error analysis
-  - semi_supervised.ipynb  → semi-supervised results and analysis
-  - feature_description.pdf → feature reference document
-  - models/val_results.csv  → exportable comparison table
+  - EDA.ipynb                        → data insights, feature correlations
+  - preprocessing.ipynb              → feature engineering methodology
+  - modeling.ipynb                   → model comparison, best model summary
+  - evaluation.ipynb                 → final metrics, SHAP plots, error analysis
+  - semi_supervised.ipynb            → Stage 6: confidence thresholding & self-training
+  - label_expansion.ipynb            → Stage 7: entity-based label expansion (Issue #3)
+  - improved_semi_supervised.ipynb   → Stage 8: IF, Label Spreading, sender-network (Issue #4)
+  - feature_description.pdf          → feature reference document
+  - models/val_results.csv           → exportable comparison table
+  - model_status.md                  → model stability summary post Issues #3 & #4
 ```
 
 ---
 
-*Pipeline version 2.0 | Last updated 2026-03-23*
+*Pipeline version 3.0 | Last updated 2026-04-01*
