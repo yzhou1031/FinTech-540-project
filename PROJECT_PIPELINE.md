@@ -120,6 +120,52 @@ Logistic Regression established a strong linear baseline (0.819), showing that e
 
 ---
 
+## Stage 4b — Cross-Validation Model Selection ✅ Complete
+
+**Notebook:** `modeling.ipynb` (Stage 4b section) | **Triggered by:** PR #5 proposing RF as new best model
+
+### Why this was run
+
+PR #5 added 11 new features and reported that Random Forest narrowly beat LightGBM on a single test split (RF: F1-macro 0.8802 / AUC 0.9590 vs LightGBM: 0.8838 / 0.9562). A single 541-token holdout is too small to make a reliable model-selection decision, so a 5-fold stratified CV was run on the **pooled train + val set (3,065 tokens)** using the already-tuned hyperparameters for both models. The test set (541 tokens) remained locked throughout.
+
+### How the labels were constructed for CV
+
+No new labels were created. The CV pool is simply the existing train split (2,524 tokens) and val split (541 tokens) concatenated:
+
+```
+X_cv = np.vstack([X_train_u, X_val_u])   # 3,065 tokens
+y_cv = np.concatenate([y_train, y_val])   # same symbol-collision labels as before
+```
+
+Pooling train + val gives each fold ~612 validation tokens — larger and more stable than the original 541-token single holdout. The 16 behavioral features and all label assignments are identical to Stages 3–4.
+
+### Results
+
+| Model | CV F1-macro | ± std | CV ROC-AUC | ± std |
+|---|---|---|---|---|
+| **LightGBM (tuned)** | **0.8658** | ±0.0081 | 0.9344 | ±0.0098 |
+| Random Forest | 0.8649 | ±0.0073 | 0.9383 | ±0.0077 |
+| XGBoost (tuned) | 0.8565 | ±0.0099 | 0.9314 | ±0.0092 |
+
+**Paired t-test (LightGBM vs RF on per-fold F1-macro scores):**
+- t = 0.34, **p = 0.7485** — not significant (p ≥ 0.05)
+- The two models trade fold wins; the 0.0009 F1-macro gap is within noise
+
+**CV winner re-evaluated on test set:**
+- F1-macro: 0.8821 | ROC-AUC: 0.9534
+
+### Why the model did not change
+
+The single test-split result from PR #5 (RF slightly ahead) does not replicate across folds. LightGBM leads the CV mean and the difference is statistically insignificant. Beyond the numbers:
+
+- LightGBM's gradient boosting is better suited to this data profile: ~2,500 training samples, skewed/sparse features, class imbalance — conditions where RF's variance-averaging offers no structural advantage
+- LightGBM is faster to train and has lower prediction latency
+- Switching models on a p = 0.75 result would introduce churn without any measurable benefit
+
+**Decision:** `best_model.joblib` remains LightGBM (tuned). PR #5's 11 new features should be evaluated separately — by re-running Stage 4b with the 27-feature preprocessed data — before any model switch is considered.
+
+---
+
 ## Stage 5 — Model Evaluation & Interpretation ✅ Complete
 
 **Notebook:** `evaluation.ipynb` | **Data:** held-out test set (541 tokens, never seen during training)
@@ -273,4 +319,4 @@ All data, figures, and model outputs are available across:
 
 ---
 
-*Pipeline version 3.0 | Last updated 2026-04-01*
+*Pipeline version 3.1 | Last updated 2026-04-04*
