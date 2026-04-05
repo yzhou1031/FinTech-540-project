@@ -74,7 +74,7 @@ are used ($\approx$\,2.16 million rows after filtering).}
 
 \section{Engineered Features}
 
-All 16 features below are computed per unique \texttt{contract\_addr}
+All 27 features below are computed per unique \texttt{contract\_addr}
 (i.e., one row per token) and used as the model input matrix $X$.
 
 \vspace{0.5em}
@@ -157,7 +157,57 @@ category\_entropy
 
 sender\_is\_labeled
   & Binary: 1 if any sender address appears in \texttt{account\_labels.csv}
-  & Legit tokens are more likely sent by known DEX routers or protocol contracts \\
+  & Legit tokens are more likely sent by known DEX routers or protocol contracts \\[6pt]
+
+\multicolumn{3}{l}{\textit{Graph-based (from transfer graph via NetworkX)}} \\[2pt]
+
+in\_degree\_mean
+  & Mean in-degree of receivers in the token's directed transfer graph
+  & Low $\to$ airdrop to fresh wallets with no prior activity \\[4pt]
+
+out\_degree\_max
+  & Max out-degree of any sender in the token's directed transfer graph
+  & High $\to$ single bot spraying transfers to many addresses \\[4pt]
+
+star\_topology\_ratio
+  & Fraction of senders with out-degree $\ge 10 \times$ in-degree
+  & High $\to$ 1 sender $\to$ N receivers star topology \\[4pt]
+
+n\_connected\_components
+  & Number of weakly connected components in the token's transfer graph
+  & High $\to$ fragmented, synthetic graph \\[6pt]
+
+\multicolumn{3}{l}{\textit{Temporal (from block numbers)}} \\[2pt]
+
+activity\_decay\_rate
+  & Transfers in first 10 unique blocks / transfers in last 10 unique blocks
+  & High $\to$ front-loaded activity that dies quickly \\[4pt]
+
+inter\_block\_time\_var
+  & Variance of block gaps between consecutive transfers
+  & Low $\to$ robotic, uniform timing between transfers \\[4pt]
+
+burst\_duration\_ratio
+  & $(\text{block\_range}) \;/\; n\_transfers$
+  & Low $\to$ dense burst airdrop compressed in few blocks \\[6pt]
+
+\multicolumn{3}{l}{\textit{MEV / Transaction (from \texttt{txs\_20000000} \& \texttt{zeromev\_20000000})}} \\[2pt]
+
+is\_deploy\_mev
+  & Binary: 1 if any sender/receiver of the token appears in MEV data
+  & 1 $\to$ deployer or participants engaged in MEV \\[4pt]
+
+mev\_sandwich\_count
+  & Number of token addresses overlapping with sandwich attack addresses
+  & High $\to$ token targeted by MEV sandwich bots \\[4pt]
+
+mev\_frontrun\_count
+  & Number of token addresses overlapping with frontrunning addresses
+  & High $\to$ suspicious frontrunning extraction \\[4pt]
+
+gas\_price\_at\_deploy
+  & Gas price (Gwei) of the token's earliest transaction
+  & Anomalously high/low $\to$ bot activity \\
 
 \bottomrule
 \end{tabular}
@@ -188,11 +238,14 @@ Before model training, the following transformations are applied (see \texttt{pr
 
 \begin{enumerate}
   \item \textbf{Imputation:} Missing values filled with the column median (no nulls were found in the labeled set).
-  \item \textbf{Log transform:} \texttt{log1p} applied to 10 right-skewed features:
+  \item \textbf{Log transform:} \texttt{log1p} applied to 18 right-skewed features:
         \texttt{n\_transfers}, \texttt{n\_unique\_senders}, \texttt{n\_unique\_receivers},
         \texttt{value\_mean}, \texttt{value\_std}, \texttt{sender\_receiver\_ratio},
         \texttt{transfers\_per\_block}, \texttt{n\_distinct\_blocks}, \texttt{block\_range},
-        \texttt{unique\_values\_count}.
+        \texttt{unique\_values\_count},
+        \texttt{in\_degree\_mean}, \texttt{out\_degree\_max}, \texttt{n\_connected\_components},
+        \texttt{inter\_block\_time\_var}, \texttt{burst\_duration\_ratio},
+        \texttt{mev\_sandwich\_count}, \texttt{mev\_frontrun\_count}, \texttt{gas\_price\_at\_deploy}.
   \item \textbf{Scaling:} \texttt{RobustScaler} (centers on median, scales by IQR) fit on the training set only and applied to validation and test sets --- prevents data leakage through the scaler.
   \item \textbf{Split:} Stratified 70\,/\,15\,/\,15 train\,/\,val\,/\,test split.
         Train\,=\,2,524\,|\,Val\,=\,541\,|\,Test\,=\,541.

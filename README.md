@@ -26,7 +26,7 @@ Spam tokens on Ethereum often impersonate legitimate tokens by reusing the same 
 ├── model_status.md                  # Model performance history & failure analysis
 ├── feature_description.pdf          # Feature schema documentation
 ├── models/
-│   ├── best_model.joblib            # Tuned LightGBM (F1-macro 0.8838, ROC-AUC 0.9562)
+│   ├── best_model.joblib            # LightGBM tuned (F1-macro 0.8877, ROC-AUC 0.9598)
 │   ├── best_model_name.joblib       # Model name string
 │   └── val_results.csv             # Full model comparison table
 ├── data/
@@ -65,7 +65,7 @@ Place them in the `data/` directory before running any notebooks.
 ### Install Dependencies
 
 ```bash
-pip install pandas numpy matplotlib seaborn scikit-learn xgboost lightgbm shap pyarrow fastparquet jupyter
+pip install pandas numpy matplotlib seaborn scikit-learn xgboost lightgbm shap pyarrow fastparquet jupyter networkx
 ```
 
 Or with conda:
@@ -79,16 +79,16 @@ pip install xgboost lightgbm shap
 
 ## Best Model
 
-**Tuned LightGBM** trained on 2,524 labeled tokens with 16 behavioral features:
+**Tuned LightGBM** trained on 2,524 labeled tokens with 27 behavioral features:
 
 | Metric | Score |
 |--------|-------|
-| F1-macro | **0.8838** |
-| ROC-AUC | **0.9562** |
-| F1-spam | 0.88 |
-| F1-legit | 0.89 |
+| F1-macro | **0.8877** |
+| ROC-AUC | **0.9598** |
+| F1-spam | 0.90 |
+| F1-legit | 0.88 |
 
-Top SHAP features: `n_unique_senders`, `n_transfers`, `n_unique_receivers`, `sender_receiver_ratio`, `top1_sender_share`, `n_distinct_blocks`
+Top SHAP features: `block_range`, `n_unique_senders`, `n_unique_receivers`, `value_mean`, `top1_sender_share`, `n_distinct_blocks`, `unique_values_count`, `n_connected_components`
 
 ## Running the Project
 
@@ -108,7 +108,14 @@ See [`PROJECT_PIPELINE.md`](PROJECT_PIPELINE.md) for full stage-by-stage notes a
 
 ## Key Features
 
-Features are aggregated at the **token (contract address) level**:
+27 features aggregated at the **token (contract address) level**:
+
+**Activity & volume:** `n_transfers`, `n_unique_senders`, `n_unique_receivers`
+**Transfer value:** `value_mean`, `value_std`, `value_null_ratio`, `zero_value_ratio`, `unique_values_count`
+**Block distribution:** `n_distinct_blocks`, `block_range`
+**Ratio / derived:** `sender_receiver_ratio`, `transfers_per_block`
+**Concentration:** `top1_sender_share`, `receiver_concentration`
+**External / categorical:** `category_entropy`, `sender_is_labeled`
 
 | Feature | Spam Signal |
 |---------|------------|
@@ -124,6 +131,32 @@ Features are aggregated at the **token (contract address) level**:
 | `unique_values_count` | Spam uses very few distinct transfer amounts |
 | `value_null_ratio` | Spam often has missing decimals |
 | `sender_is_labeled` | Legit tokens sent by known protocols/DEXs |
+
+**Graph-based (Issue #2):**
+
+| Feature | Spam Signal |
+|---------|------------|
+| `in_degree_mean` | Low → airdrop to fresh wallets with no prior activity |
+| `out_degree_max` | High → single bot spraying transfers to many addresses |
+| `star_topology_ratio` | High → 1 sender → N receivers star pattern |
+| `n_connected_components` | High → fragmented, synthetic transfer graph |
+
+**Temporal (Issue #2):**
+
+| Feature | Spam Signal |
+|---------|------------|
+| `activity_decay_rate` | High → front-loaded activity that dies quickly |
+| `inter_block_time_var` | Low → robotic, uniform timing between transfers |
+| `burst_duration_ratio` | Low → dense burst airdrop compressed in few blocks |
+
+**MEV / Transaction (Issue #2):**
+
+| Feature | Spam Signal |
+|---------|------------|
+| `is_deploy_mev` | 1 → deployer engaged in MEV activity |
+| `mev_sandwich_count` | High → token targeted by sandwich attack bots |
+| `mev_frontrun_count` | High → suspicious frontrunning extraction |
+| `gas_price_at_deploy` | Anomalously high/low → bot activity |
 
 ## Contributing
 
