@@ -6,12 +6,12 @@
 
 | Metric | Value |
 |---|---|
-| F1-macro | *re-run needed* |
-| ROC-AUC | *re-run needed* |
+| F1-macro | 0.8877 |
+| ROC-AUC | 0.9598 |
+| F1-spam | 0.9003 |
+| F1-legit | 0.8750 |
 | Training set | 2,524 tokens |
 | Features | 27 behavioral features (16 original + 11 from Issue #2) |
-
-*Note: metrics will be populated after re-running `modeling.ipynb` → `evaluation.ipynb` with LightGBM selected on 27 features.*
 
 ---
 

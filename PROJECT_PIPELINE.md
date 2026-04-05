@@ -126,7 +126,12 @@ Logistic Regression established a strong linear baseline (0.819), showing that e
 
 **Final test set results — LightGBM (tuned):**
 
-*Re-run `modeling.ipynb` → `evaluation.ipynb` to populate metrics with 27-feature LightGBM.*
+| Metric | Score |
+|---|---|
+| F1-macro | 0.8877 |
+| ROC-AUC | 0.9598 |
+| F1-spam | 0.9003 |
+| F1-legit | 0.8750 |
 
 **SHAP top features:** `block_range`, `n_unique_senders`, `n_unique_receivers`, `value_mean`, `top1_sender_share`, `n_distinct_blocks`, `unique_values_count`, `n_connected_components`
 
@@ -146,14 +151,14 @@ Logistic Regression established a strong linear baseline (0.819), showing that e
 
 | Approach | Train size | F1-macro | Δ vs baseline |
 |---|---|---|---|
-| Supervised only (baseline) | 2,524 | **0.8802** | — |
-| Pseudo-label (t=0.10) | 6,577 | — | *re-run needed* |
+| Supervised only (baseline) | 2,524 | **0.8877** | — |
+| Pseudo-label (t=0.10) | 6,577 | — | *re-run `semi_supervised.ipynb`* |
 | Pseudo-label (t=0.15) | 7,508 | — | *re-run needed* |
 | Pseudo-label (t=0.20) | 8,440 | — | *re-run needed* |
 | Self-Training (t=0.90) | 9,795 | — | *re-run needed* |
 | Self-Training (t=0.80) | 10,764 | — | *re-run needed* |
 
-*Note: Semi-supervised results above were from the 16-feature pipeline. Re-run `semi_supervised.ipynb` with 27 features to update.*
+*Note: Semi-supervised variant results need re-running with 27-feature LightGBM. Baseline updated.*
 
 **Why it failed:** (1) labeled set already representative; (2) 14:1 pseudo-label class skew; (3) unlabeled pseudo-spam are dormant contracts (different type from training spam); (4) 53% of unlabeled tokens are genuinely uncertain.
 
@@ -180,12 +185,12 @@ Used `account_labels.csv` (~370k known Ethereum entities) to flag tokens whose t
 
 | Approach | F1-macro | Δ vs baseline |
 |---|---|---|
-| Supervised baseline | **0.8802** | — |
-| Entity pseudo-spam only | — | *re-run needed* |
+| Supervised baseline | **0.8877** | — |
+| Entity pseudo-spam only | — | *re-run `label_expansion.ipynb`* |
 | Entity spam + confidence legit | — | *re-run needed* |
 | Entity flags as features (Fix 3) | — | *re-run needed* |
 
-*Note: Label expansion results above were from the 16-feature pipeline. Re-run `label_expansion.ipynb` with 27 features to update.*
+*Note: Label expansion variant results need re-running with 27-feature LightGBM. Baseline updated.*
 
 `phishing_flag` and `hack_flag` scored **zero feature importance** — behavioral features already encode the signal from entity identity. **Model unchanged.**
 
@@ -199,8 +204,8 @@ Addressed the 14:1 class-skew problem from Stage 6 with three alternative approa
 
 | Approach | Train size | F1-macro | Δ vs baseline |
 |---|---|---|---|
-| Supervised baseline | 2,524 | **0.8802** | — |
-| IF-A1 spam manifold (score > 0.00) | 4,166 | — | *re-run needed* |
+| Supervised baseline | 2,524 | **0.8877** | — |
+| IF-A1 spam manifold (score > 0.00) | 4,166 | — | *re-run `improved_semi_supervised.ipynb`* |
 | IF-A1 spam manifold (score > 0.05) | 2,529 | — | *re-run needed* |
 | IF-A1 spam manifold (score > 0.10) | 2,524 | — | *re-run needed* |
 | IF-A2 global anomaly (auto) | — | — | *re-run needed* |
@@ -209,7 +214,7 @@ Addressed the 14:1 class-skew problem from Stage 6 with three alternative approa
 | Sender-network propagation (share > 0.5) | 4,760 | — | *re-run needed* |
 | Sender-network propagation (share > 0.7) | 4,318 | — | *re-run needed* |
 
-*Note: Semi-supervised results above were from the 16-feature pipeline. Re-run `improved_semi_supervised.ipynb` with 27 features to update.*
+*Note: Semi-supervised variant results need re-running with 27-feature LightGBM. Baseline updated.*
 
 **Key findings:**
 - IF-A2 (global anomaly) failed catastrophically: anomaly detection flags the minority class — legit tokens — since spam is the majority at 55.7%
