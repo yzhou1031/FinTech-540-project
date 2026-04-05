@@ -2,16 +2,16 @@
 
 ## Best model: updated (Issue #2 — Feature Engineering Improvements)
 
-`models/best_model.joblib` — Random Forest trained on 2,524 labeled tokens with 27 behavioral features (expanded from 16 via Issue #2: graph-based, temporal, and MEV/transaction features).
+`models/best_model.joblib` — tuned LightGBM trained on 2,524 labeled tokens with 27 behavioral features (expanded from 16 via Issue #2: graph-based, temporal, and MEV/transaction features).
 
 | Metric | Value |
 |---|---|
-| F1-macro | 0.8802 |
-| ROC-AUC | 0.9590 |
-| F1-spam | 0.8937 |
-| F1-legit | 0.8667 |
+| F1-macro | *re-run needed* |
+| ROC-AUC | *re-run needed* |
 | Training set | 2,524 tokens |
 | Features | 27 behavioral features (16 original + 11 from Issue #2) |
+
+*Note: metrics will be populated after re-running `modeling.ipynb` → `evaluation.ipynb` with LightGBM selected on 27 features.*
 
 ---
 
@@ -38,7 +38,7 @@
 
 ## Why the model did not change
 
-The 3,606 labeled tokens are already representative enough that the supervised Random Forest generalises well to the unlabeled pool. Every pseudo-labeling method — confidence thresholding (Stage 6), entity-based flagging (Issue #3), Isolation Forest, Label Spreading, and sender-network propagation (Issue #4) — introduced label noise faster than useful signal.
+The 3,606 labeled tokens are already representative enough that the supervised LightGBM generalises well to the unlabeled pool. Every pseudo-labeling method — confidence thresholding (Stage 6), entity-based flagging (Issue #3), Isolation Forest, Label Spreading, and sender-network propagation (Issue #4) — introduced label noise faster than useful signal.
 
 The model did not need more data. It needed *better* data. Neither issue provided that.
 

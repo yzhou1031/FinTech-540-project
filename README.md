@@ -26,7 +26,7 @@ Spam tokens on Ethereum often impersonate legitimate tokens by reusing the same 
 ├── model_status.md                  # Model performance history & failure analysis
 ├── feature_description.pdf          # Feature schema documentation
 ├── models/
-│   ├── best_model.joblib            # Random Forest (F1-macro 0.8802, ROC-AUC 0.9590)
+│   ├── best_model.joblib            # LightGBM tuned (27 features; re-run modeling.ipynb to regenerate)
 │   ├── best_model_name.joblib       # Model name string
 │   └── val_results.csv             # Full model comparison table
 ├── data/
@@ -79,14 +79,9 @@ pip install xgboost lightgbm shap
 
 ## Best Model
 
-**Random Forest** trained on 2,524 labeled tokens with 27 behavioral features:
+**Tuned LightGBM** trained on 2,524 labeled tokens with 27 behavioral features.
 
-| Metric | Score |
-|--------|-------|
-| F1-macro | **0.8802** |
-| ROC-AUC | **0.9590** |
-| F1-spam | 0.89 |
-| F1-legit | 0.87 |
+*Note: test metrics will be updated after re-running `modeling.ipynb` → `evaluation.ipynb` with LightGBM selected.*
 
 Top SHAP features: `block_range`, `n_unique_senders`, `n_unique_receivers`, `value_mean`, `top1_sender_share`, `n_distinct_blocks`, `unique_values_count`, `n_connected_components`
 

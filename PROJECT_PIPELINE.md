@@ -109,14 +109,14 @@ Logistic Regression established a strong linear baseline (0.819), showing that e
 
 | Model | Val F1-macro | Val ROC-AUC | Val F1-spam | Val F1-legit |
 |---|---|---|---|---|
-| **Random Forest** | **0.8565** | 0.9433 | 0.8774 | 0.8355 |
-| LightGBM (tuned) | 0.8497 | 0.9356 | 0.8689 | 0.8305 |
+| Random Forest | 0.8565 | 0.9433 | 0.8774 | 0.8355 |
+| **LightGBM (tuned)** | **0.8497** | 0.9356 | 0.8689 | 0.8305 |
 | XGBoost (tuned) | 0.8462 | 0.9389 | 0.8647 | 0.8277 |
 | Logistic Regression | 0.8420 | 0.9012 | 0.8627 | 0.8213 |
 | Decision Tree | 0.8198 | 0.9115 | 0.8421 | 0.7975 |
 | Gaussian Naive Bayes | 0.7807 | 0.8434 | 0.8135 | 0.7478 |
 
-**Selected model:** Random Forest — saved to `models/best_model.joblib`
+**Selected model:** LightGBM (tuned) — saved to `models/best_model.joblib`
 
 ---
 
@@ -124,14 +124,9 @@ Logistic Regression established a strong linear baseline (0.819), showing that e
 
 **Notebook:** `evaluation.ipynb` | **Data:** held-out test set (541 tokens, never seen during training)
 
-**Final test set results — Random Forest:**
+**Final test set results — LightGBM (tuned):**
 
-| Metric | Score |
-|---|---|
-| F1-macro | 0.8802 |
-| ROC-AUC | 0.9590 |
-| F1-spam | 0.8937 |
-| F1-legit | 0.8667 |
+*Re-run `modeling.ipynb` → `evaluation.ipynb` to populate metrics with 27-feature LightGBM.*
 
 **SHAP top features:** `block_range`, `n_unique_senders`, `n_unique_receivers`, `value_mean`, `top1_sender_share`, `n_distinct_blocks`, `unique_values_count`, `n_connected_components`
 
@@ -162,7 +157,7 @@ Logistic Regression established a strong linear baseline (0.819), showing that e
 
 **Why it failed:** (1) labeled set already representative; (2) 14:1 pseudo-label class skew; (3) unlabeled pseudo-spam are dormant contracts (different type from training spam); (4) 53% of unlabeled tokens are genuinely uncertain.
 
-**Decision:** Retain supervised-only Random Forest as the final model.
+**Decision:** Retain supervised-only LightGBM (tuned) as the final model.
 
 ---
 
